@@ -22,7 +22,8 @@ def load_model():
 # load data
 @st.cache_data
 def load_data():
-    df = pd.read_csv('data/train.csv')
+    url = "https://raw.githubusercontent.com/plotly/datasets/master/uber-rides-data1.csv"
+    df = pd.read_csv(url)
     df['Date/Time'] = pd.to_datetime(df['Date/Time'])
     df['hour']    = df['Date/Time'].dt.hour
     df['day']     = df['Date/Time'].dt.day
