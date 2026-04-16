@@ -1,9 +1,11 @@
+import os
 import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import pickle
+from sklearn.ensemble import RandomForestRegressor
 
 # page config
 st.set_page_config(
@@ -12,14 +14,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# load model
-@st.cache_resource
-def load_model():
-    with open('models/model.pkl', 'rb') as f:
-        model = pickle.load(f)
-    return model
-
-# load data
+# load data from url
 @st.cache_data
 def load_data():
     url = "https://raw.githubusercontent.com/plotly/datasets/master/uber-rides-data1.csv"
@@ -31,8 +26,25 @@ def load_data():
     df['weekday'] = df['Date/Time'].dt.weekday
     return df
 
-model = load_model()
+# train or load model
+@st.cache_resource
+def load_model():
+    if os.path.exists('models/model.pkl'):
+        with open('models/model.pkl', 'rb') as f:
+            model = pickle.load(f)
+    else:
+        df = load_data()
+        hourly = df.groupby(['month','day','weekday','hour']).size().reset_index()
+        hourly.columns = ['month','day','weekday','hour','ride_count']
+        X = hourly[['month','day','weekday','hour']]
+        y = hourly['ride_count']
+        model = RandomForestRegressor(n_estimators=100, random_state=42)
+        model.fit(X, y)
+    return model
+
+# load data and model
 df    = load_data()
+model = load_model()
 
 # title
 st.title("🚕 NYC Ride Demand Predictor")
@@ -76,7 +88,7 @@ with col1:
     st.metric("🚕 Predicted Rides", f"{prediction:,}")
 
 with col2:
-    hour_label = "AM" if hour < 12 else "PM"
+    hour_label   = "AM" if hour < 12 else "PM"
     display_hour = hour if hour <= 12 else hour - 12
     st.metric("🕐 Selected Time", f"{display_hour}:00 {hour_label}")
 
