@@ -75,8 +75,7 @@ nyc_eta_project/
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/jageshwar252/nyc-eta-project.git
-cd nyc-eta-project
+git clone https://github.com/PriyaKumari2002/nyc-eta-project.git
 ```
 
 ### 2. Create virtual environment
